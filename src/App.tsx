@@ -11,20 +11,25 @@ interface Playlist {
 }
 
 function App() {
+  // --- STATE: Data & UI ---
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [name, setName] = useState('');
   const [creator, setCreator] = useState('');
   const [genre, setGenre] = useState('jazz');
   const [loading, setLoading] = useState(true);
+
+  // --- STATE: Auth ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
 
-  // State for editing
+  // --- STATE: Edit Mode ---
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editCreator, setEditCreator] = useState('');
   const [editGenre, setEditGenre] = useState('jazz');
 
+  // --- API CALLS ---
   const fetchPlaylists = async () => {
     try {
       const response = await fetch(`${API_URL}/api/playlists`, { credentials: 'include' });
@@ -44,6 +49,7 @@ function App() {
     }
   };
 
+  // --- EFFECTS ---
   useEffect(() => {
     let active = true;
     Promise.all([fetchPlaylists(), checkAuth()]).then(([loadedPlaylists, authenticated]) => {
@@ -56,14 +62,28 @@ function App() {
     return () => { active = false; };
   }, []);
 
+  // --- AUTH HANDLERS ---
   const handleLoginRedirect = (provider: 'github' | 'google') => {
+    setIsAuthLoading(true);
     window.location.href = `${API_URL}/auth/${provider}`;
   };
 
-  const handleLogout = () => {
-    window.location.href = `${API_URL}/auth/logout`;
+  const handleLogout = async () => {
+    setIsAuthLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/auth/logout`, { credentials: 'include' });
+      if (response.ok) {
+        setIsLoggedIn(false);
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Error logging out:', error);
+    } finally {
+      setIsAuthLoading(false);
+    }
   };
 
+  // --- CRUD HANDLERS ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -86,7 +106,6 @@ function App() {
     }
   };
 
-  // Handle Delete
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this playlist?')) return;
     try {
@@ -106,7 +125,6 @@ function App() {
     }
   };
 
-  // Handle Edit Submit
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingId) return;
@@ -119,7 +137,7 @@ function App() {
       });
       if (response.ok) {
         alert('Playlist updated!');
-        setEditingId(null); // Close edit mode
+        setEditingId(null);
         const updated = await fetchPlaylists();
         if (updated) setPlaylists(updated);
       } else {
@@ -130,7 +148,6 @@ function App() {
     }
   };
 
-  // Start editing
   const startEdit = (playlist: Playlist) => {
     setEditingId(playlist._id);
     setEditName(playlist.name);
@@ -138,35 +155,57 @@ function App() {
     setEditGenre(playlist.genre);
   };
 
+  // --- RENDER ---
   if (loading) return <p className="loading">Loading playlists...</p>;
 
   return (
     <div className="container">
+      {/* HEADER */}
       <header className="header">
         <h1>🎵 Music Playlists</h1>
         <div className="auth-section">
           {isLoggedIn ? (
-            <button onClick={handleLogout} className="auth-button logout">Logout</button>
+            <button onClick={handleLogout} className="auth-button logout" disabled={isAuthLoading}>
+              {isAuthLoading ? 'Logging out...' : 'Logout'}
+            </button>
           ) : (
-            <button onClick={() => setIsModalOpen(true)} className="auth-button login">Login</button>
+            <button onClick={() => setIsModalOpen(true)} className="auth-button login">
+              Login
+            </button>
           )}
         </div>
       </header>
 
+      {/* LOGIN MODAL */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Sign In</h2>
             <p>Choose a provider to log in:</p>
             <div className="modal-buttons">
-              <button onClick={() => handleLoginRedirect('github')} className="provider-btn github">Login with GitHub</button>
-              <button onClick={() => handleLoginRedirect('google')} className="provider-btn google">Login with Google</button>
+              <button 
+                onClick={() => handleLoginRedirect('github')} 
+                className="provider-btn github"
+                disabled={isAuthLoading}
+              >
+                {isAuthLoading ? 'Redirecting...' : 'Login with GitHub'}
+              </button>
+              <button 
+                onClick={() => handleLoginRedirect('google')} 
+                className="provider-btn google"
+                disabled={isAuthLoading}
+              >
+                {isAuthLoading ? 'Redirecting...' : 'Login with Google'}
+              </button>
             </div>
-            <button onClick={() => setIsModalOpen(false)} className="close-btn">Cancel</button>
+            <button onClick={() => setIsModalOpen(false)} className="close-btn" disabled={isAuthLoading}>
+              Cancel
+            </button>
           </div>
         </div>
       )}
 
+      {/* CREATE FORM */}
       <form onSubmit={handleSubmit} className="playlist-form">
         <input type="text" placeholder="Playlist Name" value={name} onChange={(e) => setName(e.target.value)} required className="input" />
         <input type="text" placeholder="Creator" value={creator} onChange={(e) => setCreator(e.target.value)} required className="input" />
@@ -179,6 +218,7 @@ function App() {
         <button type="submit" className="submit-btn">Create Playlist</button>
       </form>
 
+      {/* PLAYLISTS GRID */}
       <div className="playlist-grid">
         {playlists.map((playlist) => (
           <div key={playlist._id} className="playlist-card">

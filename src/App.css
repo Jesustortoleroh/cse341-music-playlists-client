@@ -1,4 +1,6 @@
-/* Reset and base styles */
+/* =========================================
+    RESET AND BASE STYLES
+   ========================================= */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -18,7 +20,9 @@ body {
   padding: 2rem;
 }
 
-/* Header styles */
+/* =========================================
+   HEADER STYLES
+   ========================================= */
 .header {
   display: flex;
   justify-content: space-between;
@@ -44,11 +48,19 @@ body {
   border-radius: 6px;
   text-decoration: none;
   font-weight: 600;
-  transition: opacity 0.2s;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, background-color 0.2s;
+  font-size: 0.9rem;
 }
 
 .auth-button:hover {
   opacity: 0.8;
+}
+
+.auth-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .auth-button.login {
@@ -61,7 +73,9 @@ body {
   color: #fff;
 }
 
-/* Form styles */
+/* =========================================
+    FORM STYLES
+   ========================================= */
 .playlist-form {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr auto;
@@ -102,7 +116,9 @@ body {
   background-color: #8b5cf6;
 }
 
-/* Playlist grid styles */
+/* =========================================
+   PLAYLIST GRID STYLES
+   ========================================= */
 .playlist-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -134,14 +150,70 @@ body {
   margin-bottom: 0.25rem;
 }
 
-/* Loading state */
-.loading {
-  text-align: center;
-  margin-top: 4rem;
-  font-size: 1.2rem;
-  color: #a1a1aa;
+/* =========================================
+   EDIT & DELETE ACTIONS
+   ========================================= */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
-/* Modal Overlay */
+
+.edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.cancel-btn {
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  border: 1px solid #555;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background-color: #333;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.edit-btn, .delete-btn {
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.edit-btn {
+  background-color: #a78bfa;
+  color: #000;
+}
+
+.edit-btn:hover {
+  background-color: #8b5cf6;
+}
+
+.delete-btn {
+  background-color: #ef4444;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background-color: #dc2626;
+}
+
+/* =========================================
+   MODAL STYLES (LOGIN)
+   ========================================= */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -155,7 +227,6 @@ body {
   z-index: 1000;
 }
 
-/* Modal Content Box */
 .modal-content {
   background-color: #1e1e1e;
   padding: 2rem;
@@ -191,11 +262,20 @@ body {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, transform 0.1s;
 }
 
 .provider-btn:hover {
   opacity: 0.85;
+}
+
+.provider-btn:active {
+  transform: scale(0.98);
+}
+
+.provider-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .provider-btn.github {
@@ -222,62 +302,17 @@ body {
   text-decoration: underline;
 }
 
-/* Edit Form */
-.edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.close-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.edit-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.cancel-btn {
-  padding: 0.5rem 1rem;
-  background-color: transparent;
-  border: 1px solid #555;
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.cancel-btn:hover {
-  background-color: #333;
-}
-
-/* Card Actions (Edit/Delete) */
-.card-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.edit-btn, .delete-btn {
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  border: none;
-  font-size: 0.8rem;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.edit-btn {
-  background-color: #a78bfa;
-  color: #000;
-}
-
-.edit-btn:hover {
-  background-color: #8b5cf6;
-}
-
-.delete-btn {
-  background-color: #ef4444;
-  color: #fff;
-}
-
-.delete-btn:hover {
-  background-color: #dc2626;
+/* =========================================
+   LOADING STATE
+   ========================================= */
+.loading {
+  text-align: center;
+  margin-top: 4rem;
+  font-size: 1.2rem;
+  color: #a1a1aa;
 }
