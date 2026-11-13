@@ -1,75 +1,34 @@
-# React + TypeScript + Vite
+# 🎵 Music Playlists - Client (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the **frontend client** for the Music Playlists API. It is a React application built with TypeScript and Vite, designed to provide a clean, modern interface for managing music playlists.
 
-Currently, two official plugins are available:
+## 📋 Description
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The client connects to the backend API to perform full CRUD operations (Create, Read, Update, Delete) on music playlists. It features:
+- **OAuth 2.0 Authentication:** Login with GitHub and Google.
+- **Modern UI:** Dark mode, responsive grid, and interactive modals.
+- **State Management:** React hooks (`useState`, `useEffect`) for managing app state.
+- **Cross-Origin Communication:** Handles cookies and CORS for secure communication with the backend on Render.
 
-## React Compiler
+## 🚀 Technologies
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React** (with Hooks)
+- **TypeScript**
+- **Vite** (Build tool)
+- **CSS3** (Custom styling, no external UI libraries)
+- **Fetch API** (for HTTP requests)
 
-## Expanding the ESLint configuration
+## 🏗️ Project Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `src/App.tsx`: Main component containing the logic for authentication, CRUD operations, and UI rendering.
+- `src/App.css`: Custom styles for the entire application (dark theme, modals, cards, etc.).
+- `src/main.tsx`: Entry point of the React application.
+- `vite.config.ts`: Vite configuration (including the proxy for local development).
+- `.env`: Environment variables (not pushed to GitHub).
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🛠️ How to Run Locally
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Jesustortoleroh/cse341-music-playlists-client.git
+   cd cse341-music-playlists-client
