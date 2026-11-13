@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-// Use environment variable for the API URL (fallback to localhost for development)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-// Define the Playlist type based on your backend model
 interface Playlist {
   _id: string;
   name: string;
@@ -18,11 +16,13 @@ function App() {
   const [creator, setCreator] = useState('');
   const [genre, setGenre] = useState('jazz');
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Fetch playlists on load
   const fetchPlaylists = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/playlists`);
+      const response = await fetch(`${API_URL}/api/playlists`, {
+        credentials: 'include',
+      });
       const result = await response.json();
       return result.success ? (result.data as Playlist[]) : undefined;
     } catch (error) {
@@ -30,11 +30,23 @@ function App() {
     }
   };
 
+  const checkAuth = async () => {
+    try {
+      const response = await fetch(`${API_URL}/auth/profile`, {
+        credentials: 'include',
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     let active = true;
-    fetchPlaylists().then((data) => {
+    Promise.all([fetchPlaylists(), checkAuth()]).then(([loadedPlaylists, authenticated]) => {
       if (active) {
-        if (data) setPlaylists(data);
+        if (loadedPlaylists) setPlaylists(loadedPlaylists);
+        setIsLoggedIn(authenticated);
         setLoading(false);
       }
     });
@@ -43,14 +55,22 @@ function App() {
     };
   }, []);
 
-  // Create a new playlist
+  const handleLogin = () => {
+    // Force a full page navigation to the backend OAuth endpoint
+    window.location.href = `${API_URL}/auth/github`;
+  };
+
+  const handleLogout = () => {
+    window.location.href = `${API_URL}/auth/logout`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await fetch(`${API_URL}/api/playlists`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // <-- IMPORTANT: Send cookies for OAuth
+        credentials: 'include',
         body: JSON.stringify({ name, creator, genre, songs: [], isPublic: true }),
       });
       if (response.ok) {
@@ -67,20 +87,33 @@ function App() {
     }
   };
 
-  if (loading) return <p>Loading playlists...</p>;
+  if (loading) return <p className="loading">Loading playlists...</p>;
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
-      <h1>🎵 Music Playlists</h1>
-      
-      {/* Form to create a playlist */}
-      <form onSubmit={handleSubmit} style={{ marginBottom: '2rem', display: 'flex', gap: '10px' }}>
+    <div className="container">
+      <header className="header">
+        <h1>🎵 Music Playlists</h1>
+        <div className="auth-section">
+          {isLoggedIn ? (
+            <button onClick={handleLogout} className="auth-button logout">
+              Logout
+            </button>
+          ) : (
+            <button onClick={handleLogin} className="auth-button login">
+              Login with GitHub
+            </button>
+          )}
+        </div>
+      </header>
+
+      <form onSubmit={handleSubmit} className="playlist-form">
         <input 
           type="text" 
           placeholder="Playlist Name" 
           value={name} 
           onChange={(e) => setName(e.target.value)} 
           required 
+          className="input"
         />
         <input 
           type="text" 
@@ -88,20 +121,24 @@ function App() {
           value={creator} 
           onChange={(e) => setCreator(e.target.value)} 
           required 
+          className="input"
         />
-        <select value={genre} onChange={(e) => setGenre(e.target.value)}>
+        <select 
+          value={genre} 
+          onChange={(e) => setGenre(e.target.value)}
+          className="select"
+        >
           <option value="jazz">Jazz</option>
           <option value="rock">Rock</option>
           <option value="pop">Pop</option>
           <option value="classical">Classical</option>
         </select>
-        <button type="submit">Create Playlist</button>
+        <button type="submit" className="submit-btn">Create Playlist</button>
       </form>
 
-      {/* List of playlists */}
-      <div style={{ display: 'grid', gap: '1rem' }}>
+      <div className="playlist-grid">
         {playlists.map((playlist) => (
-          <div key={playlist._id} style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
+          <div key={playlist._id} className="playlist-card">
             <h2>{playlist.name}</h2>
             <p><strong>Creator:</strong> {playlist.creator}</p>
             <p><strong>Genre:</strong> {playlist.genre}</p>
