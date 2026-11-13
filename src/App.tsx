@@ -17,6 +17,9 @@ function App() {
   const [genre, setGenre] = useState('jazz');
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // State for the login modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchPlaylists = async () => {
     try {
@@ -55,9 +58,9 @@ function App() {
     };
   }, []);
 
-  const handleLogin = () => {
-    // Force a full page navigation to the backend OAuth endpoint
-    window.location.href = `${API_URL}/auth/github`;
+  const handleLoginRedirect = (provider: 'github' | 'google') => {
+    // Redirect to backend OAuth endpoint
+    window.location.href = `${API_URL}/auth/${provider}`;
   };
 
   const handleLogout = () => {
@@ -99,12 +102,33 @@ function App() {
               Logout
             </button>
           ) : (
-            <button onClick={handleLogin} className="auth-button login">
-              Login with GitHub
+            <button onClick={() => setIsModalOpen(true)} className="auth-button login">
+              Login
             </button>
           )}
         </div>
       </header>
+
+      {/* Login Modal */}
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Sign In</h2>
+            <p>Choose a provider to log in:</p>
+            <div className="modal-buttons">
+              <button onClick={() => handleLoginRedirect('github')} className="provider-btn github">
+                Login with GitHub
+              </button>
+              <button onClick={() => handleLoginRedirect('google')} className="provider-btn google">
+                Login with Google
+              </button>
+            </div>
+            <button onClick={() => setIsModalOpen(false)} className="close-btn">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="playlist-form">
         <input 
