@@ -5,6 +5,7 @@ import { Notifications } from './components/Notifications';
 import { PlaylistForm } from './components/PlaylistForm';
 import { PlaylistCard } from './components/PlaylistCard';
 import { AuthModal } from './components/AuthModal';
+import { AudioPlayer } from './components/AudioPlayer'; // 👈 IMPORTANTE: Importar el reproductor
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -15,6 +16,9 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  
+  // 👇 ESTADO NUEVO: Para controlar la canción que se está reproduciendo
+  const [currentSong, setCurrentSong] = useState<string | null>(null);
 
   const addNotification = (message: string, type: 'success' | 'error') => {
     const id = Date.now();
@@ -197,9 +201,16 @@ function App() {
             isLoggedIn={isLoggedIn} 
             onDelete={handleDeletePlaylist}
             onUpdate={handleUpdatePlaylist}
+            onPlay={(song) => setCurrentSong(song)} // 👈 AQUÍ CONECTAMOS LA CANCIÓN
           />
         ))}
       </div>
+
+      {/* 👇 AQUÍ RENDERIZAMOS EL REPRODUCTOR FLOTANTE */}
+      <AudioPlayer 
+        song={currentSong} 
+        onClose={() => setCurrentSong(null)} 
+      />
     </div>
   );
 }
