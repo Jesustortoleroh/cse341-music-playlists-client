@@ -14,8 +14,10 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // State for the real-time password checklist
   const [passwordChecks, setPasswordChecks] = useState({
     length: false,
     uppercase: false,
@@ -31,18 +33,32 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
       lowercase: /[a-z]/.test(value),
       number: /\d/.test(value),
     });
+    if (errorMessage) setErrorMessage(null);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onRegister(regName, regEmail, regPassword);
-    // Clear form and reset checks on success
-    setRegName(''); 
-    setRegEmail(''); 
-    setRegPassword('');
-    setPasswordChecks({ length: false, uppercase: false, lowercase: false, number: false });
-    setIsLoginView(true);
-    onSuccess('Account created! Please log in.');
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      await onRegister(regName, regEmail, regPassword);
+      
+      // Éxito
+      setRegName(''); 
+      setRegEmail(''); 
+      setRegPassword('');
+      setPasswordChecks({ length: false, uppercase: false, lowercase: false, number: false });
+      setIsLoginView(true);
+      onSuccess('Account created! Please log in.');
+    } catch (error: unknown) {
+      console.error('Registration error:', error);
+      // Show a user-friendly error message
+      const message = error instanceof Error ? error.message : 'Error creating account. The email might already be in use.';
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -69,6 +85,12 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
           </>
         ) : (
           <form onSubmit={handleRegister} className="auth-form">
+            {errorMessage && (
+              <div style={{ color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '0.8rem', borderRadius: '8px', fontSize: '0.9rem', textAlign: 'center', border: '1px solid #ef4444' }}>
+                {errorMessage}
+              </div>
+            )}
+
             <input 
               type="text" 
               placeholder="Full Name" 
@@ -94,7 +116,6 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
               className="input" 
             />
             
-            {/* Password Requirements Checklist */}
             <div className="password-requirements">
               <span className={passwordChecks.length ? 'valid' : 'invalid'}>
                 {passwordChecks.length ? '✓' : '○'} At least 8 characters
@@ -113,9 +134,17 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
             <button 
               type="submit" 
               className="submit-btn w-full" 
-              disabled={!passwordChecks.length || !passwordChecks.uppercase || !passwordChecks.lowercase || !passwordChecks.number}
+              disabled={
+                isSubmitting || 
+                !regName ||
+                !regEmail ||
+                !passwordChecks.length || 
+                !passwordChecks.uppercase || 
+                !passwordChecks.lowercase || 
+                !passwordChecks.number
+              }
             >
-              Create Account
+              {isSubmitting ? 'Creating account...' : 'Create Account'}
             </button>
             <p className="toggle-auth">
               Already have an account? <span onClick={() => setIsLoginView(true)}>Log in here</span>
@@ -123,7 +152,7 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
           </form>
         )}
 
-        <button onClick={onClose} className="close-btn" disabled={isAuthLoading}>
+        <button onClick={onClose} className="close-btn" disabled={isAuthLoading || isSubmitting}>
           Cancel
         </button>
       </div>
