@@ -23,12 +23,13 @@ The client connects to the backend API to perform full CRUD operations (Create, 
 - `src/App.tsx`: Main component containing the logic for authentication, CRUD operations, and UI rendering.
 - `src/App.css`: Custom styles for the entire application (dark theme, modals, cards, etc.).
 - `src/main.tsx`: Entry point of the React application.
+- `src/components/`: Reusable UI components (PlaylistCard, PlaylistForm, AuthModal, AudioPlayer, Notifications, CustomSelect).
 - `vite.config.ts`: Vite configuration (including the proxy for local development).
 - `.env`: Environment variables (not pushed to GitHub).
 
 ## 🛠️ How to Run Locally
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/Jesustortoleroh/cse341-music-playlists-client.git
    cd cse341-music-playlists-client
