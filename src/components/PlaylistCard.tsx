@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Playlist } from '../types';
+import { CustomSelect } from './CustomSelect';
 
 interface Props {
   playlist: Playlist;
@@ -7,6 +8,19 @@ interface Props {
   onDelete: (id: string) => void;
   onUpdate: (id: string, updatedData: Partial<Playlist>) => void;
 }
+
+const genreOptions = [
+  { value: 'jazz', label: 'Jazz' },
+  { value: 'rock', label: 'Rock' },
+  { value: 'pop', label: 'Pop' },
+  { value: 'classical', label: 'Classical' },
+  { value: 'electronic', label: 'Electronic' },
+  { value: 'hip-hop', label: 'Hip-Hop' },
+  { value: 'reggae', label: 'Reggae' },
+  { value: 'blues', label: 'Blues' },
+  { value: 'folk', label: 'Folk' },
+  { value: 'other', label: 'Other' }
+];
 
 export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -42,18 +56,13 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate }: Props
         <form onSubmit={handleSave} className="edit-form">
           <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required className="input" />
           <input type="text" value={editCreator} onChange={(e) => setEditCreator(e.target.value)} required className="input" />
-          <select value={editGenre} onChange={(e) => setEditGenre(e.target.value)} className="select">
-            <option value="jazz">Jazz</option>
-            <option value="rock">Rock</option>
-            <option value="pop">Pop</option>
-            <option value="classical">Classical</option>
-            <option value="electronic">Electronic</option>
-            <option value="hip-hop">Hip-Hop</option>
-            <option value="reggae">Reggae</option>
-            <option value="blues">Blues</option>
-            <option value="folk">Folk</option>
-            <option value="other">Other</option>
-          </select>
+          
+          {/* Use CustomSelect instead of native select */}
+          <CustomSelect 
+            options={genreOptions} 
+            value={editGenre} 
+            onChange={(val) => setEditGenre(val)} 
+          />
           
           <input 
             type="text" 

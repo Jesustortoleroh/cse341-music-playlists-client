@@ -1,8 +1,22 @@
 import { useState } from 'react';
+import { CustomSelect } from './CustomSelect';
 
 interface Props {
   onSubmit: (playlist: { name: string; creator: string; genre: string; songs: string[] }) => void;
 }
+
+const genreOptions = [
+  { value: 'jazz', label: 'Jazz' },
+  { value: 'rock', label: 'Rock' },
+  { value: 'pop', label: 'Pop' },
+  { value: 'classical', label: 'Classical' },
+  { value: 'electronic', label: 'Electronic' },
+  { value: 'hip-hop', label: 'Hip-Hop' },
+  { value: 'reggae', label: 'Reggae' },
+  { value: 'blues', label: 'Blues' },
+  { value: 'folk', label: 'Folk' },
+  { value: 'other', label: 'Other' }
+];
 
 export const PlaylistForm = ({ onSubmit }: Props) => {
   const [name, setName] = useState('');
@@ -36,18 +50,14 @@ export const PlaylistForm = ({ onSubmit }: Props) => {
     <form onSubmit={handleSubmit} className="playlist-form">
       <input type="text" placeholder="Playlist Name" value={name} onChange={(e) => setName(e.target.value)} required className="input" />
       <input type="text" placeholder="Creator" value={creator} onChange={(e) => setCreator(e.target.value)} required className="input" />
-      <select value={genre} onChange={(e) => setGenre(e.target.value)} className="select">
-        <option value="jazz">Jazz</option>
-        <option value="rock">Rock</option>
-        <option value="pop">Pop</option>
-        <option value="classical">Classical</option>
-        <option value="electronic">Electronic</option>
-        <option value="hip-hop">Hip-Hop</option>
-        <option value="reggae">Reggae</option>
-        <option value="blues">Blues</option>
-        <option value="folk">Folk</option>
-        <option value="other">Other</option>
-      </select>
+      
+      {/* Use CustomSelect instead of native select */}
+      <CustomSelect 
+        options={genreOptions} 
+        value={genre} 
+        onChange={(val) => setGenre(val)} 
+      />
+
       <button type="submit" className="submit-btn">Create Playlist</button>
 
       <div className="track-builder-container">
