@@ -11,7 +11,6 @@ interface Playlist {
   songs: string[];
 }
 
-// Notification type
 interface Notification {
   id: number;
   message: string;
@@ -19,27 +18,35 @@ interface Notification {
 }
 
 function App() {
+  // --- PLAYLISTS STATE ---
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [name, setName] = useState('');
   const [creator, setCreator] = useState('');
   const [genre, setGenre] = useState('jazz');
-  const [songs, setSongs] = useState(''); // Comma-separated string
+  const [songs, setSongs] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // --- AUTH STATE ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
-  
-  // Notifications state
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoginView, setIsLoginView] = useState(true); // Toggle between Login and Register
 
-  // Edit states
+  // --- REGISTER STATE ---
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+
+  // --- EDIT STATE ---
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editCreator, setEditCreator] = useState('');
   const [editGenre, setEditGenre] = useState('jazz');
   const [editSongs, setEditSongs] = useState('');
 
-  // Helper to add notifications
+  // --- NOTIFICATIONS STATE ---
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
   const addNotification = (message: string, type: 'success' | 'error') => {
     const id = Date.now();
     setNotifications((prev) => [...prev, { id, message, type }]);
@@ -48,6 +55,7 @@ function App() {
     }, 3000);
   };
 
+  // --- API CALLS ---
   const fetchPlaylists = async () => {
     try {
       const response = await fetch(`${API_URL}/api/playlists`, { credentials: 'include' });
@@ -67,6 +75,7 @@ function App() {
     }
   };
 
+  // --- EFFECTS ---
   useEffect(() => {
     let active = true;
     Promise.all([fetchPlaylists(), checkAuth()]).then(([loadedPlaylists, authenticated]) => {
@@ -79,9 +88,32 @@ function App() {
     return () => { active = false; };
   }, []);
 
+  // --- AUTH HANDLERS ---
   const handleLoginRedirect = (provider: 'github' | 'google') => {
     setIsAuthLoading(true);
     window.location.href = `${API_URL}/auth/${provider}`;
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_URL}/api/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: regName, email: regEmail, password: regPassword }),
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        addNotification('Account created! Please log in.', 'success');
+        setIsLoginView(true);
+        setRegName(''); setRegEmail(''); setRegPassword('');
+      } else {
+        addNotification(data.message || 'Error creating account', 'error');
+      }
+    } catch {
+      addNotification('Error creating account', 'error');
+    }
   };
 
   const handleLogout = async () => {
@@ -100,6 +132,7 @@ function App() {
     }
   };
 
+  // --- CRUD HANDLERS ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const songsArray = songs.split(',').map((s) => s.trim()).filter((s) => s !== '');
@@ -174,7 +207,7 @@ function App() {
     setEditSongs(playlist.songs.join(', '));
   };
 
-  // Skeleton Loading
+  // --- RENDER ---
   if (loading) {
     return (
       <div className="container">
@@ -196,7 +229,7 @@ function App() {
 
   return (
     <div className="container">
-      {/* Notifications Container */}
+      {/* Notifications */}
       <div className="notifications-container">
         {notifications.map((n) => (
           <div key={n.id} className={`toast ${n.type}`}>
@@ -220,19 +253,61 @@ function App() {
         </div>
       </header>
 
+      {/* Auth Modal */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Sign In</h2>
-            <p>Choose a provider to log in:</p>
-            <div className="modal-buttons">
-              <button onClick={() => handleLoginRedirect('github')} className="provider-btn github" disabled={isAuthLoading}>
-                {isAuthLoading ? 'Redirecting...' : 'Login with GitHub'}
-              </button>
-              <button onClick={() => handleLoginRedirect('google')} className="provider-btn google" disabled={isAuthLoading}>
-                {isAuthLoading ? 'Redirecting...' : 'Login with Google'}
-              </button>
-            </div>
+            <h2>{isLoginView ? 'Sign In' : 'Create an Account'}</h2>
+            
+            {isLoginView ? (
+              <>
+                <p>Choose a provider to log in:</p>
+                <div className="modal-buttons">
+                  <button onClick={() => handleLoginRedirect('github')} className="provider-btn github" disabled={isAuthLoading}>
+                    {isAuthLoading ? 'Redirecting...' : 'Login with GitHub'}
+                  </button>
+                  <button onClick={() => handleLoginRedirect('google')} className="provider-btn google" disabled={isAuthLoading}>
+                    {isAuthLoading ? 'Redirecting...' : 'Login with Google'}
+                  </button>
+                </div>
+                <p className="toggle-auth">
+                  Don't have an account? <span onClick={() => setIsLoginView(false)}>Register here</span>
+                </p>
+              </>
+            ) : (
+              <form onSubmit={handleRegister} className="auth-form">
+                <input 
+                  type="text" 
+                  placeholder="Full Name" 
+                  value={regName} 
+                  onChange={(e) => setRegName(e.target.value)} 
+                  required 
+                  className="input"
+                />
+                <input 
+                  type="email" 
+                  placeholder="Email Address" 
+                  value={regEmail} 
+                  onChange={(e) => setRegEmail(e.target.value)} 
+                  required 
+                  className="input"
+                />
+                <input 
+                  type="password" 
+                  placeholder="Password" 
+                  value={regPassword} 
+                  onChange={(e) => setRegPassword(e.target.value)} 
+                  required 
+                  minLength={6}
+                  className="input"
+                />
+                <button type="submit" className="submit-btn w-full">Create Account</button>
+                <p className="toggle-auth">
+                  Already have an account? <span onClick={() => setIsLoginView(true)}>Log in here</span>
+                </p>
+              </form>
+            )}
+
             <button onClick={() => setIsModalOpen(false)} className="close-btn" disabled={isAuthLoading}>
               Cancel
             </button>
@@ -240,6 +315,7 @@ function App() {
         </div>
       )}
 
+      {/* Create Playlist Form */}
       <form onSubmit={handleSubmit} className="playlist-form">
         <input type="text" placeholder="Playlist Name" value={name} onChange={(e) => setName(e.target.value)} required className="input" />
         <input type="text" placeholder="Creator" value={creator} onChange={(e) => setCreator(e.target.value)} required className="input" />
@@ -253,6 +329,7 @@ function App() {
         <button type="submit" className="submit-btn">Create Playlist</button>
       </form>
 
+      {/* Playlist Grid */}
       <div className="playlist-grid">
         {playlists.map((playlist) => (
           <div key={playlist._id} className="playlist-card">

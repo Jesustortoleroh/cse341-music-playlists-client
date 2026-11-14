@@ -9,7 +9,6 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  /* Smooth dark gradient background */
   background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
   color: #ffffff;
   min-height: 100vh;
@@ -38,7 +37,6 @@ body {
   font-size: 2.8rem;
   font-weight: 800;
   letter-spacing: -1px;
-  /* Vibrant gradient text */
   background: linear-gradient(45deg, #a78bfa, #f472b6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -52,8 +50,7 @@ body {
 
 .auth-button {
   padding: 0.6rem 1.2rem;
-  border-radius: 50px; /* Pill shape */
-  text-decoration: none;
+  border-radius: 50px;
   font-weight: 600;
   border: none;
   cursor: pointer;
@@ -88,12 +85,11 @@ body {
    ========================================= */
 .playlist-form {
   display: grid;
-  /* Adjusted for a clean 5-column layout on large screens */
   grid-template-columns: 1.2fr 1.2fr 0.8fr 1.5fr auto;
   gap: 1rem;
   margin-bottom: 3rem;
   background: rgba(30, 30, 46, 0.7);
-  backdrop-filter: blur(10px); /* Glassmorphism effect */
+  backdrop-filter: blur(10px);
   padding: 1.5rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -101,7 +97,6 @@ body {
   align-items: center;
 }
 
-/* Responsive design for smaller screens */
 @media (max-width: 900px) {
   .playlist-form {
     grid-template-columns: 1fr 1fr; 
@@ -176,7 +171,7 @@ body {
 .playlist-card h2 {
   font-size: 1.4rem;
   margin-bottom: 0.8rem;
-  color: #f472b6; /* Pink accent for titles */
+  color: #f472b6;
 }
 
 .playlist-card p {
@@ -192,7 +187,7 @@ body {
   margin-top: 1.5rem;
   padding-top: 1rem;
   border-top: 1px dashed rgba(255, 255, 255, 0.1);
-  flex-grow: 1; /* Pushes buttons to the bottom */
+  flex-grow: 1;
 }
 
 .songs-list strong {
@@ -205,7 +200,7 @@ body {
 }
 
 .songs-list ul {
-  list-style-type: none; /* Remove default bullets */
+  list-style-type: none;
   padding-left: 0;
   color: #e5e7eb;
   font-size: 0.9rem;
@@ -218,7 +213,7 @@ body {
 }
 
 .songs-list li::before {
-  content: '♪'; /* Musical note bullet */
+  content: '♪';
   color: #f472b6;
   margin-right: 8px;
   font-size: 1.1rem;
@@ -267,7 +262,7 @@ body {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s;
-  flex: 1; /* Make buttons equal width */
+  flex: 1;
 }
 
 .edit-btn {
@@ -289,7 +284,7 @@ body {
 }
 
 /* =========================================
-   MODAL STYLES (LOGIN)
+   AUTH MODAL (LOGIN & REGISTER)
    ========================================= */
 .modal-overlay {
   position: fixed;
@@ -312,7 +307,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
   width: 90%;
-  max-width: 400px;
+  max-width: 420px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
@@ -358,6 +353,37 @@ body {
 .provider-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Auth Form (Register) */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.toggle-auth {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #a1a1aa;
+}
+
+.toggle-auth span {
+  color: #a78bfa;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.toggle-auth span:hover {
+  color: #f472b6;
+  text-decoration: underline;
 }
 
 .close-btn {
