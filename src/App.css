@@ -629,3 +629,29 @@ body {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* =========================================
+   PASSWORD REQUIREMENTS CHECKLIST
+   ========================================= */
+.password-requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  text-align: left;
+  padding-left: 0.5rem;
+}
+
+.password-requirements span {
+  transition: color 0.3s ease;
+}
+
+.password-requirements .valid {
+  color: #10b981; /* Green */
+}
+
+.password-requirements .invalid {
+  color: #a1a1aa; /* Gray */
+}
