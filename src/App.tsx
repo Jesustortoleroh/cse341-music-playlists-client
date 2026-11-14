@@ -23,14 +23,18 @@ function App() {
   const [name, setName] = useState('');
   const [creator, setCreator] = useState('');
   const [genre, setGenre] = useState('jazz');
-  const [songs, setSongs] = useState('');
+  
+  // --- TRACK BUILDER STATE ---
+  const [songsArray, setSongsArray] = useState<string[]>([]);
+  const [songInput, setSongInput] = useState('');
+
   const [loading, setLoading] = useState(true);
 
   // --- AUTH STATE ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [isLoginView, setIsLoginView] = useState(true); // Toggle between Login and Register
+  const [isLoginView, setIsLoginView] = useState(true);
 
   // --- REGISTER STATE ---
   const [regName, setRegName] = useState('');
@@ -42,7 +46,8 @@ function App() {
   const [editName, setEditName] = useState('');
   const [editCreator, setEditCreator] = useState('');
   const [editGenre, setEditGenre] = useState('jazz');
-  const [editSongs, setEditSongs] = useState('');
+  const [editSongsArray, setEditSongsArray] = useState<string[]>([]);
+  const [editSongInput, setEditSongInput] = useState('');
 
   // --- NOTIFICATIONS STATE ---
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -87,6 +92,36 @@ function App() {
     });
     return () => { active = false; };
   }, []);
+
+  // --- TRACK BUILDER HANDLERS ---
+  const handleAddSong = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && songInput.trim() !== '') {
+      e.preventDefault();
+      if (!songsArray.includes(songInput.trim())) {
+        setSongsArray([...songsArray, songInput.trim()]);
+      }
+      setSongInput('');
+    }
+  };
+
+  const handleRemoveSong = (index: number) => {
+    setSongsArray(songsArray.filter((_, i) => i !== index));
+  };
+
+  // --- EDIT TRACK BUILDER HANDLERS ---
+  const handleAddEditSong = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && editSongInput.trim() !== '') {
+      e.preventDefault();
+      if (!editSongsArray.includes(editSongInput.trim())) {
+        setEditSongsArray([...editSongsArray, editSongInput.trim()]);
+      }
+      setEditSongInput('');
+    }
+  };
+
+  const handleRemoveEditSong = (index: number) => {
+    setEditSongsArray(editSongsArray.filter((_, i) => i !== index));
+  };
 
   // --- AUTH HANDLERS ---
   const handleLoginRedirect = (provider: 'github' | 'google') => {
@@ -135,7 +170,6 @@ function App() {
   // --- CRUD HANDLERS ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const songsArray = songs.split(',').map((s) => s.trim()).filter((s) => s !== '');
     try {
       const response = await fetch(`${API_URL}/api/playlists`, {
         method: 'POST',
@@ -145,7 +179,7 @@ function App() {
       });
       if (response.ok) {
         addNotification('Playlist created!', 'success');
-        setName(''); setCreator(''); setSongs('');
+        setName(''); setCreator(''); setSongsArray([]); setSongInput('');
         const updated = await fetchPlaylists();
         if (updated) setPlaylists(updated);
       } else {
@@ -178,13 +212,12 @@ function App() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingId) return;
-    const songsArray = editSongs.split(',').map((s) => s.trim()).filter((s) => s !== '');
     try {
       const response = await fetch(`${API_URL}/api/playlists/${editingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ name: editName, creator: editCreator, genre: editGenre, songs: songsArray }),
+        body: JSON.stringify({ name: editName, creator: editCreator, genre: editGenre, songs: editSongsArray }),
       });
       if (response.ok) {
         addNotification('Playlist updated!', 'success');
@@ -204,7 +237,7 @@ function App() {
     setEditName(playlist.name);
     setEditCreator(playlist.creator);
     setEditGenre(playlist.genre);
-    setEditSongs(playlist.songs.join(', '));
+    setEditSongsArray(playlist.songs || []);
   };
 
   // --- RENDER ---
@@ -212,7 +245,7 @@ function App() {
     return (
       <div className="container">
         <header className="header">
-          <h1>🎵 Music Playlists</h1>
+          <h1>🎵 VibeBeat</h1>
         </header>
         <div className="playlist-grid">
           {[1, 2, 3, 4].map((n) => (
@@ -239,7 +272,7 @@ function App() {
       </div>
 
       <header className="header">
-        <h1>🎵 Music Playlists</h1>
+        <h1>🎵 VibeBeat</h1>
         <div className="auth-section">
           {isLoggedIn ? (
             <button onClick={handleLogout} className="auth-button logout" disabled={isAuthLoading}>
@@ -257,7 +290,7 @@ function App() {
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>{isLoginView ? 'Sign In' : 'Create an Account'}</h2>
+            <h2>{isLoginView ? 'Sign In to VibeBeat' : 'Join VibeBeat'}</h2>
             
             {isLoginView ? (
               <>
@@ -276,31 +309,9 @@ function App() {
               </>
             ) : (
               <form onSubmit={handleRegister} className="auth-form">
-                <input 
-                  type="text" 
-                  placeholder="Full Name" 
-                  value={regName} 
-                  onChange={(e) => setRegName(e.target.value)} 
-                  required 
-                  className="input"
-                />
-                <input 
-                  type="email" 
-                  placeholder="Email Address" 
-                  value={regEmail} 
-                  onChange={(e) => setRegEmail(e.target.value)} 
-                  required 
-                  className="input"
-                />
-                <input 
-                  type="password" 
-                  placeholder="Password" 
-                  value={regPassword} 
-                  onChange={(e) => setRegPassword(e.target.value)} 
-                  required 
-                  minLength={6}
-                  className="input"
-                />
+                <input type="text" placeholder="Full Name" value={regName} onChange={(e) => setRegName(e.target.value)} required className="input" />
+                <input type="email" placeholder="Email Address" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required className="input" />
+                <input type="password" placeholder="Password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required minLength={6} className="input" />
                 <button type="submit" className="submit-btn w-full">Create Account</button>
                 <p className="toggle-auth">
                   Already have an account? <span onClick={() => setIsLoginView(true)}>Log in here</span>
@@ -325,8 +336,27 @@ function App() {
           <option value="pop">Pop</option>
           <option value="classical">Classical</option>
         </select>
-        <input type="text" placeholder="Songs (comma separated)" value={songs} onChange={(e) => setSongs(e.target.value)} className="input" />
         <button type="submit" className="submit-btn">Create Playlist</button>
+
+        {/* Track Builder - Ocupa todo el ancho abajo */}
+        <div className="track-builder-container">
+          <input 
+            type="text" 
+            placeholder="Type a song and press Enter..." 
+            value={songInput} 
+            onChange={(e) => setSongInput(e.target.value)}
+            onKeyDown={handleAddSong}
+            className="input track-input" 
+          />
+          <div className="chips-container">
+            {songsArray.map((song, index) => (
+              <div key={index} className="song-chip">
+                <span>♪ {song}</span>
+                <button type="button" onClick={() => handleRemoveSong(index)} className="chip-remove">×</button>
+              </div>
+            ))}
+          </div>
+        </div>
       </form>
 
       {/* Playlist Grid */}
@@ -343,7 +373,25 @@ function App() {
                   <option value="pop">Pop</option>
                   <option value="classical">Classical</option>
                 </select>
-                <input type="text" value={editSongs} onChange={(e) => setEditSongs(e.target.value)} placeholder="Songs (comma separated)" className="input" />
+                
+                {/* Edit Track Builder */}
+                <input 
+                  type="text" 
+                  placeholder="Type song and press Enter..." 
+                  value={editSongInput} 
+                  onChange={(e) => setEditSongInput(e.target.value)}
+                  onKeyDown={handleAddEditSong}
+                  className="input track-input" 
+                />
+                <div className="chips-container">
+                  {editSongsArray.map((song, index) => (
+                    <div key={index} className="song-chip">
+                      <span>♪ {song}</span>
+                      <button type="button" onClick={() => handleRemoveEditSong(index)} className="chip-remove">×</button>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="edit-actions">
                   <button type="submit" className="submit-btn">Save</button>
                   <button type="button" onClick={() => setEditingId(null)} className="cancel-btn">Cancel</button>
@@ -354,7 +402,7 @@ function App() {
                 <h2>{playlist.name}</h2>
                 <p><strong>Creator:</strong> {playlist.creator}</p>
                 <p><strong>Genre:</strong> {playlist.genre}</p>
-                {playlist.songs.length > 0 && (
+                {playlist.songs && playlist.songs.length > 0 && (
                   <div className="songs-list">
                     <strong>Songs:</strong>
                     <ul>
