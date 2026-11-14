@@ -1,55 +1,19 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import type { Playlist, Notification } from './types';
+import { Notifications } from './components/Notifications';
+import { PlaylistForm } from './components/PlaylistForm';
+import { PlaylistCard } from './components/PlaylistCard';
+import { AuthModal } from './components/AuthModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-interface Playlist {
-  _id: string;
-  name: string;
-  creator: string;
-  genre: string;
-  songs: string[];
-}
-
-interface Notification {
-  id: number;
-  message: string;
-  type: 'success' | 'error';
-}
-
 function App() {
-  // --- PLAYLISTS STATE ---
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const [name, setName] = useState('');
-  const [creator, setCreator] = useState('');
-  const [genre, setGenre] = useState('jazz');
-  
-  // --- TRACK BUILDER STATE ---
-  const [songsArray, setSongsArray] = useState<string[]>([]);
-  const [songInput, setSongInput] = useState('');
-
   const [loading, setLoading] = useState(true);
-
-  // --- AUTH STATE ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [isLoginView, setIsLoginView] = useState(true);
-
-  // --- REGISTER STATE ---
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-
-  // --- EDIT STATE ---
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editCreator, setEditCreator] = useState('');
-  const [editGenre, setEditGenre] = useState('jazz');
-  const [editSongsArray, setEditSongsArray] = useState<string[]>([]);
-  const [editSongInput, setEditSongInput] = useState('');
-
-  // --- NOTIFICATIONS STATE ---
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const addNotification = (message: string, type: 'success' | 'error') => {
@@ -60,7 +24,6 @@ function App() {
     }, 3000);
   };
 
-  // --- API CALLS ---
   const fetchPlaylists = async () => {
     try {
       const response = await fetch(`${API_URL}/api/playlists`, { credentials: 'include' });
@@ -80,7 +43,6 @@ function App() {
     }
   };
 
-  // --- EFFECTS ---
   useEffect(() => {
     let active = true;
     Promise.all([fetchPlaylists(), checkAuth()]).then(([loadedPlaylists, authenticated]) => {
@@ -93,93 +55,16 @@ function App() {
     return () => { active = false; };
   }, []);
 
-  // --- TRACK BUILDER HANDLERS ---
-  const handleAddSong = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && songInput.trim() !== '') {
-      e.preventDefault();
-      if (!songsArray.includes(songInput.trim())) {
-        setSongsArray([...songsArray, songInput.trim()]);
-      }
-      setSongInput('');
-    }
-  };
-
-  const handleRemoveSong = (index: number) => {
-    setSongsArray(songsArray.filter((_, i) => i !== index));
-  };
-
-  // --- EDIT TRACK BUILDER HANDLERS ---
-  const handleAddEditSong = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && editSongInput.trim() !== '') {
-      e.preventDefault();
-      if (!editSongsArray.includes(editSongInput.trim())) {
-        setEditSongsArray([...editSongsArray, editSongInput.trim()]);
-      }
-      setEditSongInput('');
-    }
-  };
-
-  const handleRemoveEditSong = (index: number) => {
-    setEditSongsArray(editSongsArray.filter((_, i) => i !== index));
-  };
-
-  // --- AUTH HANDLERS ---
-  const handleLoginRedirect = (provider: 'github' | 'google') => {
-    setIsAuthLoading(true);
-    window.location.href = `${API_URL}/auth/${provider}`;
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`${API_URL}/api/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: regName, email: regEmail, password: regPassword }),
-      });
-      const data = await response.json();
-      
-      if (response.ok) {
-        addNotification('Account created! Please log in.', 'success');
-        setIsLoginView(true);
-        setRegName(''); setRegEmail(''); setRegPassword('');
-      } else {
-        addNotification(data.message || 'Error creating account', 'error');
-      }
-    } catch {
-      addNotification('Error creating account', 'error');
-    }
-  };
-
-  const handleLogout = async () => {
-    setIsAuthLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/auth/logout`, { credentials: 'include' });
-      if (response.ok) {
-        setIsLoggedIn(false);
-        setIsModalOpen(false);
-        addNotification('Logged out successfully', 'success');
-      }
-    } catch (error) {
-      console.error('Error logging out:', error);
-    } finally {
-      setIsAuthLoading(false);
-    }
-  };
-
-  // --- CRUD HANDLERS ---
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreatePlaylist = async (data: { name: string; creator: string; genre: string; songs: string[] }) => {
     try {
       const response = await fetch(`${API_URL}/api/playlists`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ name, creator, genre, songs: songsArray, isPublic: true }),
+        body: JSON.stringify({ ...data, isPublic: true }),
       });
       if (response.ok) {
         addNotification('Playlist created!', 'success');
-        setName(''); setCreator(''); setSongsArray([]); setSongInput('');
         const updated = await fetchPlaylists();
         if (updated) setPlaylists(updated);
       } else {
@@ -190,7 +75,27 @@ function App() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleUpdatePlaylist = async (id: string, updatedData: Partial<Playlist>) => {
+    try {
+      const response = await fetch(`${API_URL}/api/playlists/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(updatedData),
+      });
+      if (response.ok) {
+        addNotification('Playlist updated!', 'success');
+        const updated = await fetchPlaylists();
+        if (updated) setPlaylists(updated);
+      } else {
+        addNotification('Error updating playlist.', 'error');
+      }
+    } catch (error) {
+      console.error('Error updating playlist:', error);
+    }
+  };
+
+  const handleDeletePlaylist = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this playlist?')) return;
     try {
       const response = await fetch(`${API_URL}/api/playlists/${id}`, {
@@ -209,44 +114,40 @@ function App() {
     }
   };
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingId) return;
+  const handleLogin = (provider: 'github' | 'google') => {
+    setIsAuthLoading(true);
+    window.location.href = `${API_URL}/auth/${provider}`;
+  };
+
+  const handleRegister = async (name: string, email: string, password: string) => {
+    const response = await fetch(`${API_URL}/api/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+    if (!response.ok) throw new Error('Registration failed');
+  };
+
+  const handleLogout = async () => {
+    setIsAuthLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/playlists/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ name: editName, creator: editCreator, genre: editGenre, songs: editSongsArray }),
-      });
+      const response = await fetch(`${API_URL}/auth/logout`, { credentials: 'include' });
       if (response.ok) {
-        addNotification('Playlist updated!', 'success');
-        setEditingId(null);
-        const updated = await fetchPlaylists();
-        if (updated) setPlaylists(updated);
-      } else {
-        addNotification('Error updating playlist.', 'error');
+        setIsLoggedIn(false);
+        setIsModalOpen(false);
+        addNotification('Logged out successfully', 'success');
       }
     } catch (error) {
-      console.error('Error updating playlist:', error);
+      console.error('Error logging out:', error);
+    } finally {
+      setIsAuthLoading(false);
     }
   };
 
-  const startEdit = (playlist: Playlist) => {
-    setEditingId(playlist._id);
-    setEditName(playlist.name);
-    setEditCreator(playlist.creator);
-    setEditGenre(playlist.genre);
-    setEditSongsArray(playlist.songs || []);
-  };
-
-  // --- RENDER ---
   if (loading) {
     return (
       <div className="container">
-        <header className="header">
-          <h1>🎵 VibeBeat</h1>
-        </header>
+        <header className="header"><h1>🎵 VibeBeat</h1></header>
         <div className="playlist-grid">
           {[1, 2, 3, 4].map((n) => (
             <div key={n} className="playlist-card skeleton">
@@ -262,15 +163,8 @@ function App() {
 
   return (
     <div className="container">
-      {/* Notifications */}
-      <div className="notifications-container">
-        {notifications.map((n) => (
-          <div key={n.id} className={`toast ${n.type}`}>
-            {n.message}
-          </div>
-        ))}
-      </div>
-
+      <Notifications notifications={notifications} />
+      
       <header className="header">
         <h1>🎵 VibeBeat</h1>
         <div className="auth-section">
@@ -279,148 +173,31 @@ function App() {
               {isAuthLoading ? 'Logging out...' : 'Logout'}
             </button>
           ) : (
-            <button onClick={() => setIsModalOpen(true)} className="auth-button login">
-              Login
-            </button>
+            <button onClick={() => setIsModalOpen(true)} className="auth-button login">Login</button>
           )}
         </div>
       </header>
 
-      {/* Auth Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>{isLoginView ? 'Sign In to VibeBeat' : 'Join VibeBeat'}</h2>
-            
-            {isLoginView ? (
-              <>
-                <p>Choose a provider to log in:</p>
-                <div className="modal-buttons">
-                  <button onClick={() => handleLoginRedirect('github')} className="provider-btn github" disabled={isAuthLoading}>
-                    {isAuthLoading ? 'Redirecting...' : 'Login with GitHub'}
-                  </button>
-                  <button onClick={() => handleLoginRedirect('google')} className="provider-btn google" disabled={isAuthLoading}>
-                    {isAuthLoading ? 'Redirecting...' : 'Login with Google'}
-                  </button>
-                </div>
-                <p className="toggle-auth">
-                  Don't have an account? <span onClick={() => setIsLoginView(false)}>Register here</span>
-                </p>
-              </>
-            ) : (
-              <form onSubmit={handleRegister} className="auth-form">
-                <input type="text" placeholder="Full Name" value={regName} onChange={(e) => setRegName(e.target.value)} required className="input" />
-                <input type="email" placeholder="Email Address" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required className="input" />
-                <input type="password" placeholder="Password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required minLength={6} className="input" />
-                <button type="submit" className="submit-btn w-full">Create Account</button>
-                <p className="toggle-auth">
-                  Already have an account? <span onClick={() => setIsLoginView(true)}>Log in here</span>
-                </p>
-              </form>
-            )}
+      <AuthModal 
+        isOpen={isModalOpen} 
+        isAuthLoading={isAuthLoading} 
+        onClose={() => setIsModalOpen(false)} 
+        onLogin={handleLogin} 
+        onRegister={handleRegister}
+        onSuccess={(msg) => addNotification(msg, 'success')}
+      />
 
-            <button onClick={() => setIsModalOpen(false)} className="close-btn" disabled={isAuthLoading}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      <PlaylistForm onSubmit={handleCreatePlaylist} />
 
-      {/* Create Playlist Form */}
-      <form onSubmit={handleSubmit} className="playlist-form">
-        <input type="text" placeholder="Playlist Name" value={name} onChange={(e) => setName(e.target.value)} required className="input" />
-        <input type="text" placeholder="Creator" value={creator} onChange={(e) => setCreator(e.target.value)} required className="input" />
-        <select value={genre} onChange={(e) => setGenre(e.target.value)} className="select">
-          <option value="jazz">Jazz</option>
-          <option value="rock">Rock</option>
-          <option value="pop">Pop</option>
-          <option value="classical">Classical</option>
-        </select>
-        <button type="submit" className="submit-btn">Create Playlist</button>
-
-        {/* Track Builder - Ocupa todo el ancho abajo */}
-        <div className="track-builder-container">
-          <input 
-            type="text" 
-            placeholder="Type a song and press Enter..." 
-            value={songInput} 
-            onChange={(e) => setSongInput(e.target.value)}
-            onKeyDown={handleAddSong}
-            className="input track-input" 
-          />
-          <div className="chips-container">
-            {songsArray.map((song, index) => (
-              <div key={index} className="song-chip">
-                <span>♪ {song}</span>
-                <button type="button" onClick={() => handleRemoveSong(index)} className="chip-remove">×</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </form>
-
-      {/* Playlist Grid */}
       <div className="playlist-grid">
         {playlists.map((playlist) => (
-          <div key={playlist._id} className="playlist-card">
-            {editingId === playlist._id ? (
-              <form onSubmit={handleEditSubmit} className="edit-form">
-                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required className="input" />
-                <input type="text" value={editCreator} onChange={(e) => setEditCreator(e.target.value)} required className="input" />
-                <select value={editGenre} onChange={(e) => setEditGenre(e.target.value)} className="select">
-                  <option value="jazz">Jazz</option>
-                  <option value="rock">Rock</option>
-                  <option value="pop">Pop</option>
-                  <option value="classical">Classical</option>
-                </select>
-                
-                {/* Edit Track Builder */}
-                <input 
-                  type="text" 
-                  placeholder="Type song and press Enter..." 
-                  value={editSongInput} 
-                  onChange={(e) => setEditSongInput(e.target.value)}
-                  onKeyDown={handleAddEditSong}
-                  className="input track-input" 
-                />
-                <div className="chips-container">
-                  {editSongsArray.map((song, index) => (
-                    <div key={index} className="song-chip">
-                      <span>♪ {song}</span>
-                      <button type="button" onClick={() => handleRemoveEditSong(index)} className="chip-remove">×</button>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="edit-actions">
-                  <button type="submit" className="submit-btn">Save</button>
-                  <button type="button" onClick={() => setEditingId(null)} className="cancel-btn">Cancel</button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <h2>{playlist.name}</h2>
-                <p><strong>Creator:</strong> {playlist.creator}</p>
-                <p><strong>Genre:</strong> {playlist.genre}</p>
-                {playlist.songs && playlist.songs.length > 0 && (
-                  <div className="songs-list">
-                    <strong>Songs:</strong>
-                    <ul>
-                      {playlist.songs.map((song, i) => (
-                        <li key={i}>{song}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {isLoggedIn && (
-                  <div className="card-actions">
-                    <button onClick={() => startEdit(playlist)} className="edit-btn">Edit</button>
-                    <button onClick={() => handleDelete(playlist._id)} className="delete-btn">Delete</button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          <PlaylistCard 
+            key={playlist._id} 
+            playlist={playlist} 
+            isLoggedIn={isLoggedIn} 
+            onDelete={handleDeletePlaylist}
+            onUpdate={handleUpdatePlaylist}
+          />
         ))}
       </div>
     </div>
