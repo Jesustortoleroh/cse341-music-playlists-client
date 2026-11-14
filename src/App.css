@@ -1,5 +1,5 @@
 /* =========================================
-    RESET AND BASE STYLES
+   RESET AND BASE STYLES
    ========================================= */
 * {
   box-sizing: border-box;
@@ -8,14 +8,16 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: #121212;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Smooth dark gradient background */
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
   color: #ffffff;
+  min-height: 100vh;
   line-height: 1.6;
 }
 
 .container {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -27,15 +29,20 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #333;
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(167, 139, 250, 0.2);
 }
 
 .header h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #a78bfa; /* Purple accent */
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  /* Vibrant gradient text */
+  background: linear-gradient(45deg, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .auth-section {
@@ -44,87 +51,101 @@ body {
 }
 
 .auth-button {
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px; /* Pill shape */
   text-decoration: none;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s, background-color 0.2s;
-  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .auth-button:hover {
-  opacity: 0.8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .auth-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .auth-button.login {
-  background-color: #a78bfa;
-  color: #000;
+  background: linear-gradient(45deg, #a78bfa, #8b5cf6);
+  color: #fff;
 }
 
 .auth-button.logout {
-  background-color: #ef4444;
+  background: linear-gradient(45deg, #ef4444, #f87171);
   color: #fff;
 }
 
 /* =========================================
-    FORM STYLES
+   FORM STYLES
    ========================================= */
 .playlist-form {
   display: grid;
-  /* 4 columns for inputs, 1 for the button */
-  grid-template-columns: 1.5fr 1.5fr 1fr 2fr auto; 
+  /* Adjusted for a clean 5-column layout on large screens */
+  grid-template-columns: 1.2fr 1.2fr 0.8fr 1.5fr auto;
   gap: 1rem;
-  margin-bottom: 2rem;
-  background-color: #1e1e1e;
+  margin-bottom: 3rem;
+  background: rgba(30, 30, 46, 0.7);
+  backdrop-filter: blur(10px); /* Glassmorphism effect */
   padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #333;
-  align-items: center; /* Vertically center the items */
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  align-items: center;
 }
 
+/* Responsive design for smaller screens */
 @media (max-width: 900px) {
   .playlist-form {
-    grid-template-columns: 1fr 1fr; /* 2 columns on smaller screens */
+    grid-template-columns: 1fr 1fr; 
   }
   .submit-btn {
-    grid-column: span 2; /* Button takes full width */
+    grid-column: span 2;
   }
 }
 
 .input, .select {
-  padding: 0.75rem;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background-color: #2a2a2a;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease;
+}
+
+.input::placeholder {
+  color: #a1a1aa;
 }
 
 .input:focus, .select:focus {
   outline: none;
   border-color: #a78bfa;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .submit-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
   border: none;
-  background-color: #a78bfa;
-  color: #000;
+  background: linear-gradient(45deg, #a78bfa, #f472b6);
+  color: #fff;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .submit-btn:hover {
-  background-color: #8b5cf6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(167, 139, 250, 0.4);
 }
 
 /* =========================================
@@ -132,33 +153,75 @@ body {
    ========================================= */
 .playlist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
 }
 
 .playlist-card {
-  background-color: #1e1e1e;
-  padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #333;
-  transition: transform 0.2s, border-color 0.2s;
+  background: rgba(30, 30, 46, 0.8);
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .playlist-card:hover {
-  transform: translateY(-2px);
-  border-color: #a78bfa;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(167, 139, 250, 0.15);
+  border-color: rgba(167, 139, 250, 0.3);
 }
 
 .playlist-card h2 {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
-  color: #a78bfa;
+  font-size: 1.4rem;
+  margin-bottom: 0.8rem;
+  color: #f472b6; /* Pink accent for titles */
 }
 
 .playlist-card p {
-  color: #a1a1aa;
+  color: #d1d5db;
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+
+/* =========================================
+   SONGS LIST STYLES
+   ========================================= */
+.songs-list {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  flex-grow: 1; /* Pushes buttons to the bottom */
+}
+
+.songs-list strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #a78bfa;
   font-size: 0.9rem;
-  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.songs-list ul {
+  list-style-type: none; /* Remove default bullets */
+  padding-left: 0;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.songs-list li {
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+}
+
+.songs-list li::before {
+  content: '♪'; /* Musical note bullet */
+  color: #f472b6;
+  margin-right: 8px;
+  font-size: 1.1rem;
 }
 
 /* =========================================
@@ -167,59 +230,62 @@ body {
 .edit-form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .edit-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  gap: 0.8rem;
+  margin-top: 1rem;
 }
 
 .cancel-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1rem;
   background-color: transparent;
-  border: 1px solid #555;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: #fff;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .cancel-btn:hover {
-  background-color: #333;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .card-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
 }
 
 .edit-btn, .delete-btn {
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
   border: none;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   cursor: pointer;
   font-weight: 600;
+  transition: all 0.2s;
+  flex: 1; /* Make buttons equal width */
 }
 
 .edit-btn {
-  background-color: #a78bfa;
-  color: #000;
+  background-color: rgba(167, 139, 250, 0.2);
+  color: #a78bfa;
 }
 
 .edit-btn:hover {
-  background-color: #8b5cf6;
+  background-color: rgba(167, 139, 250, 0.4);
 }
 
 .delete-btn {
-  background-color: #ef4444;
-  color: #fff;
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
 }
 
 .delete-btn:hover {
-  background-color: #dc2626;
+  background-color: rgba(239, 68, 68, 0.4);
 }
 
 /* =========================================
@@ -231,7 +297,8 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -239,65 +306,58 @@ body {
 }
 
 .modal-content {
-  background-color: #1e1e1e;
-  padding: 2rem;
-  border-radius: 12px;
-  border: 1px solid #333;
+  background: #1e1e2e;
+  padding: 2.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
   width: 90%;
   max-width: 400px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .modal-content h2 {
-  margin-bottom: 1rem;
-  color: #a78bfa;
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+  color: #fff;
 }
 
 .modal-content p {
   color: #a1a1aa;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .modal-buttons {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .provider-btn {
-  padding: 0.75rem;
-  border-radius: 6px;
+  padding: 0.8rem;
+  border-radius: 8px;
   border: none;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
-}
-
-.provider-btn:hover {
-  opacity: 0.85;
-}
-
-.provider-btn:active {
-  transform: scale(0.98);
-}
-
-.provider-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  transition: all 0.2s;
 }
 
 .provider-btn.github {
-  background-color: #333;
+  background: #24292e;
   color: #fff;
   border: 1px solid #444;
 }
 
 .provider-btn.google {
-  background-color: #fff;
-  color: #000;
+  background: #fff;
+  color: #333;
+}
+
+.provider-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .close-btn {
@@ -307,29 +367,16 @@ body {
   color: #a1a1aa;
   cursor: pointer;
   font-size: 0.9rem;
+  transition: color 0.2s;
 }
 
 .close-btn:hover {
+  color: #fff;
   text-decoration: underline;
 }
 
-.close-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* =========================================
-   LOADING STATE
-   ========================================= */
-.loading {
-  text-align: center;
-  margin-top: 4rem;
-  font-size: 1.2rem;
-  color: #a1a1aa;
-}
-
-/* =========================================
-   8. NOTIFICATIONS (TOASTS)
+   NOTIFICATIONS (TOASTS)
    ========================================= */
 .notifications-container {
   position: fixed;
@@ -349,36 +396,35 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   animation: slideIn 0.3s ease-out;
   min-width: 250px;
+  border-left: 5px solid;
 }
 
 .toast.success {
-  background-color: #10b981; /* Green */
+  background-color: #1e1e2e;
+  border-left-color: #10b981;
+  color: #10b981;
 }
 
 .toast.error {
-  background-color: #ef4444; /* Red */
+  background-color: #1e1e2e;
+  border-left-color: #ef4444;
+  color: #ef4444;
 }
 
 @keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 /* =========================================
-   9. SKELETON LOADING
+   SKELETON LOADING
    ========================================= */
 .skeleton {
   pointer-events: none;
 }
 
 .skeleton-line {
-  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -386,8 +432,8 @@ body {
 }
 
 .skeleton-line.title {
-  height: 24px;
-  width: 70%;
+  height: 28px;
+  width: 60%;
 }
 
 .skeleton-line.text {
@@ -398,30 +444,4 @@ body {
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
-}
-
-/* =========================================
-   10. SONGS LIST
-   ========================================= */
-.songs-list {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #333;
-}
-
-.songs-list strong {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #a78bfa;
-}
-
-.songs-list ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  color: #a1a1aa;
-  font-size: 0.9rem;
-}
-
-.songs-list li {
-  margin-bottom: 0.25rem;
 }
