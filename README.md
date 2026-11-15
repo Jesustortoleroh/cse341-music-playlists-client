@@ -1,6 +1,6 @@
-# 🎵 Music Playlists - Client (Frontend)
+# 🎵 Vibe Beat - Client (Frontend)
 
-This is the **frontend client** for the Music Playlists API. It is a React application built with TypeScript and Vite, designed to provide a clean, modern interface for managing music playlists.
+This is the **frontend client** for the Vibe Beat API. It is a React application built with TypeScript and Vite, designed to provide a clean, modern interface for managing music playlists.
 
 ## 📋 Description
 
@@ -31,5 +31,5 @@ The client connects to the backend API to perform full CRUD operations (Create, 
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Jesustortoleroh/cse341-music-playlists-client.git
-   cd cse341-music-playlists-client
+  git clone https://github.com/Jesustortoleroh/vibe-beat-client.git
+  cd vibe-beat-client
