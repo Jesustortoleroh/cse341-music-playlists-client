@@ -7,7 +7,8 @@ import { PlaylistCard } from './components/PlaylistCard';
 import { AuthModal } from './components/AuthModal';
 import { AudioPlayer } from './components/AudioPlayer';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// Fallback to your new backend URL instead of localhost
+const API_URL = import.meta.env.VITE_API_URL || 'https://vibe-beat-server.onrender.com';
 
 function App() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -121,18 +122,16 @@ function App() {
     window.location.href = `${API_URL}/auth/${provider}`;
   };
 
-  // 👇 CORREGIDO: Ahora captura y lanza el mensaje real del backend
   const handleRegister = async (name: string, email: string, password: string) => {
     const response = await fetch(`${API_URL}/api/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // <-- FIXED: Added this line to prevent CORS/Fetch errors
       body: JSON.stringify({ name, email, password }),
     });
 
     if (!response.ok) {
-      // Intentamos leer el JSON de error del backend
       const errorData = await response.json().catch(() => null);
-      // Lanzamos el mensaje exacto del backend o uno por defecto
       const message = errorData?.message || errorData?.error || 'Error al registrar usuario. Intenta de nuevo.';
       throw new Error(message);
     }
