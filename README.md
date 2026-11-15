@@ -5,6 +5,7 @@ This is the **frontend client** for the Vibe Beat API. It is a React application
 ## 📋 Description
 
 The client connects to the backend API to perform full CRUD operations (Create, Read, Update, Delete) on music playlists. It features:
+
 - **OAuth 2.0 Authentication:** Login with GitHub and Google.
 - **Modern UI:** Dark mode, responsive grid, and interactive modals.
 - **State Management:** React hooks (`useState`, `useEffect`) for managing app state.
@@ -31,5 +32,8 @@ The client connects to the backend API to perform full CRUD operations (Create, 
 
 1. **Clone the repository:**
    ```bash
-  git clone https://github.com/Jesustortoleroh/vibe-beat-client.git
-  cd vibe-beat-client
+
+   ```
+
+git clone https://github.com/Jesustortoleroh/vibe-beat-client.git
+cd vibe-beat-client

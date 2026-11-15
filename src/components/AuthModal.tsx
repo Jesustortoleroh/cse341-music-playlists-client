@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Props {
   isOpen: boolean;
@@ -9,12 +9,19 @@ interface Props {
   onSuccess: (message: string) => void;
 }
 
-export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister, onSuccess }: Props) => {
+export const AuthModal = ({
+  isOpen,
+  isAuthLoading,
+  onClose,
+  onLogin,
+  onRegister,
+  onSuccess
+}: Props) => {
   const [isLoginView, setIsLoginView] = useState(true);
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -22,8 +29,29 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
     length: false,
     uppercase: false,
     lowercase: false,
-    number: false,
+    number: false
   });
+
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Manejo de accesibilidad: Cerrar con Escape y atrapar el foco
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Mover el foco al modal cuando se abre
+      modalRef.current?.focus();
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   const handlePasswordChange = (value: string) => {
     setRegPassword(value);
@@ -31,7 +59,7 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
       length: value.length >= 8,
       uppercase: /[A-Z]/.test(value),
       lowercase: /[a-z]/.test(value),
-      number: /\d/.test(value),
+      number: /\d/.test(value)
     });
     if (errorMessage) setErrorMessage(null);
   };
@@ -43,18 +71,19 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
 
     try {
       await onRegister(regName, regEmail, regPassword);
-      
-      // Éxito
-      setRegName(''); 
-      setRegEmail(''); 
+
+      setRegName('');
+      setRegEmail('');
       setRegPassword('');
       setPasswordChecks({ length: false, uppercase: false, lowercase: false, number: false });
       setIsLoginView(true);
       onSuccess('Account created! Please log in.');
     } catch (error: unknown) {
       console.error('Registration error:', error);
-      // Show a user-friendly error message
-      const message = error instanceof Error ? error.message : 'Error creating account. The email might already be in use.';
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Error creating account. The email might already be in use.';
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
@@ -64,58 +93,109 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h2>{isLoginView ? 'Sign In to VibeBeat' : 'Join VibeBeat'}</h2>
-        
+    <div className="modal-overlay" onClick={onClose}>
+      <div
+        className="modal-content"
+        ref={modalRef}
+        tabIndex={-1} // Permite que el div reciba el foco
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        onClick={(e) => e.stopPropagation()} // Evita que clics dentro del modal lo cierren
+      >
+        <h2 id="modal-title">{isLoginView ? 'Sign In to VibeBeat' : 'Join VibeBeat'}</h2>
+
         {isLoginView ? (
           <>
             <p>Choose a provider to log in:</p>
             <div className="modal-buttons">
-              <button onClick={() => onLogin('github')} className="provider-btn github" disabled={isAuthLoading}>
+              <button
+                onClick={() => onLogin('github')}
+                className="provider-btn github"
+                disabled={isAuthLoading}
+              >
                 {isAuthLoading ? 'Redirecting...' : 'Login with GitHub'}
               </button>
-              <button onClick={() => onLogin('google')} className="provider-btn google" disabled={isAuthLoading}>
+              <button
+                onClick={() => onLogin('google')}
+                className="provider-btn google"
+                disabled={isAuthLoading}
+              >
                 {isAuthLoading ? 'Redirecting...' : 'Login with Google'}
               </button>
             </div>
             <p className="toggle-auth">
-              Don't have an account? <span onClick={() => setIsLoginView(false)}>Register here</span>
+              Don't have an account?{' '}
+              <span onClick={() => setIsLoginView(false)}>Register here</span>
             </p>
           </>
         ) : (
           <form onSubmit={handleRegister} className="auth-form">
             {errorMessage && (
-              <div style={{ color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '0.8rem', borderRadius: '8px', fontSize: '0.9rem', textAlign: 'center', border: '1px solid #ef4444' }}>
+              <div
+                role="alert"
+                style={{
+                  color: '#ef4444',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  padding: '0.8rem',
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  textAlign: 'center',
+                  border: '1px solid #ef4444'
+                }}
+              >
                 {errorMessage}
               </div>
             )}
 
-            <input 
-              type="text" 
-              placeholder="Full Name" 
-              value={regName} 
-              onChange={(e) => setRegName(e.target.value)} 
-              required 
-              className="input" 
-            />
-            <input 
-              type="email" 
-              placeholder="Email Address" 
-              value={regEmail} 
-              onChange={(e) => setRegEmail(e.target.value)} 
-              required 
-              className="input" 
-            />
-            <input 
-              type="password" 
-              placeholder="Password" 
-              value={regPassword} 
-              onChange={(e) => handlePasswordChange(e.target.value)} 
-              required 
-              className="input" 
-            />
-            
+            <div>
+              <label htmlFor="reg-name" className="sr-only">
+                Full Name
+              </label>
+              <input
+                id="reg-name"
+                type="text"
+                placeholder="Full Name"
+                value={regName}
+                onChange={(e) => setRegName(e.target.value)}
+                required
+                className="input"
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="reg-email" className="sr-only">
+                Email Address
+              </label>
+              <input
+                id="reg-email"
+                type="email"
+                placeholder="Email Address"
+                value={regEmail}
+                onChange={(e) => setRegEmail(e.target.value)}
+                required
+                className="input"
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="reg-password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="reg-password"
+                type="password"
+                placeholder="Password"
+                value={regPassword}
+                onChange={(e) => handlePasswordChange(e.target.value)}
+                required
+                className="input"
+                style={{ width: '100%' }}
+              />
+            </div>
+
             <div className="password-requirements">
               <span className={passwordChecks.length ? 'valid' : 'invalid'}>
                 {passwordChecks.length ? '✓' : '○'} At least 8 characters
@@ -131,16 +211,16 @@ export const AuthModal = ({ isOpen, isAuthLoading, onClose, onLogin, onRegister,
               </span>
             </div>
 
-            <button 
-              type="submit" 
-              className="submit-btn w-full" 
+            <button
+              type="submit"
+              className="submit-btn w-full"
               disabled={
-                isSubmitting || 
+                isSubmitting ||
                 !regName ||
                 !regEmail ||
-                !passwordChecks.length || 
-                !passwordChecks.uppercase || 
-                !passwordChecks.lowercase || 
+                !passwordChecks.length ||
+                !passwordChecks.uppercase ||
+                !passwordChecks.lowercase ||
                 !passwordChecks.number
               }
             >

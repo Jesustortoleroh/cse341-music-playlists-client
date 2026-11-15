@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   song: string | null;
@@ -6,39 +6,45 @@ interface Props {
 }
 
 export const AudioPlayer = ({ song, onClose }: Props) => {
-  const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  // Reset player when a new song is selected
   useEffect(() => {
-    if (!song) return;
+    if (!song) {
+      return;
+    }
 
-    const resetTimer = setTimeout(() => {
-      setIsPlaying(true);
-      setProgress(0);
-    }, 0);
-
-    return () => clearTimeout(resetTimer);
-  }, [song]);
-
-  // Simulate progress bar
-  useEffect(() => {
-    if (!isPlaying) return;
-
+    // ✅ Usamos una variable local para el intervalo
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const nextProgress = Math.min(prev + 1, 100);
-
-        if (nextProgress >= 100) {
-          setIsPlaying(false);
+        if (prev >= 100) {
+          clearInterval(interval);
+          // En lugar de setIsPlaying(false) aquí (lo cual puede ser síncrono),
+          // lo hacemos asíncronamente o al final del intervalo.
+          return 100;
         }
-
-        return nextProgress;
+        return prev + 1;
       });
-    }, 500); // Simulates 50 seconds total duration (100 * 500ms)
+    }, 500);
 
-    return () => clearInterval(interval);
-  }, [isPlaying]);
+    return () => {
+      clearInterval(interval);
+      // Al desmontar o cambiar de canción, reseteamos el progreso
+      setProgress(0);
+    };
+  }, [song]);
+
+  // ✅ Controlamos si está reproduciendo basándonos en el progreso
+  const isCurrentlyPlaying = isPlaying && progress < 100;
+
+  const togglePlay = () => {
+    if (progress >= 100) {
+      setProgress(0);
+      setIsPlaying(true);
+    } else {
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   if (!song) return null;
 
@@ -47,30 +53,28 @@ export const AudioPlayer = ({ song, onClose }: Props) => {
       <div className="player-info">
         <span className="player-note">♪</span>
         <div>
-          <p className="player-song-title">{song}</p>
-          <p className="player-artist">VibeBeat Simulated Audio</p>
+          <div className="player-song-title">{song}</div>
+          <div className="player-artist">Vibe Beat Collection</div>
         </div>
       </div>
 
       <div className="player-controls">
-        <button 
-          className="player-btn play-pause" 
-          onClick={() => setIsPlaying(!isPlaying)}
+        <button
+          className="player-btn"
+          onClick={togglePlay}
+          aria-label={isCurrentlyPlaying ? 'Pausar' : 'Reproducir'}
         >
-          {isPlaying ? '⏸' : '▶'}
+          {isCurrentlyPlaying ? '⏸' : '▶'}
         </button>
-        
+
         <div className="progress-bar-container">
-          <div 
-            className="progress-bar-fill" 
-            style={{ width: `${progress}%` }}
-          ></div>
+          <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
         </div>
-        
-        <span className="player-time">{Math.floor(progress / 20)}:{(progress % 20 * 3).toString().padStart(2, '0')}</span>
+
+        <span className="player-time">0:{progress < 10 ? `0${progress}` : progress}</span>
       </div>
 
-      <button className="player-btn close-player" onClick={onClose}>
+      <button className="player-btn close-player" onClick={onClose} aria-label="Cerrar reproductor">
         ✕
       </button>
     </div>

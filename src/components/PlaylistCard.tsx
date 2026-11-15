@@ -11,12 +11,16 @@ interface Props {
 }
 
 const genreOptions = [
-  { value: 'Rock', label: 'Rock' },
-  { value: 'Pop', label: 'Pop' },
-  { value: 'Jazz', label: 'Jazz' },
-  { value: 'Hip-Hop', label: 'Hip-Hop' },
-  { value: 'Classical', label: 'Classical' },
-  { value: 'Country', label: 'Country' },
+  { value: 'rock', label: 'Rock' },
+  { value: 'pop', label: 'Pop' },
+  { value: 'jazz', label: 'Jazz' },
+  { value: 'classical', label: 'Classical' },
+  { value: 'electronic', label: 'Electronic' },
+  { value: 'hip-hop', label: 'Hip-Hop' },
+  { value: 'reggae', label: 'Reggae' },
+  { value: 'blues', label: 'Blues' },
+  { value: 'folk', label: 'Folk' },
+  { value: 'other', label: 'Other' }
 ];
 
 export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay }: Props) => {
@@ -25,15 +29,16 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
   const [formData, setFormData] = useState({
     name: playlist.name,
     creator: playlist.creator,
-    genre: playlist.genre,
+    genre: playlist.genre
   });
 
-  // Sincroniza el estado del formulario antes de abrir la edición
+  // ✅ Eliminamos el useEffect de sincronización
+
   const startEditing = () => {
     setFormData({
       name: playlist.name,
       creator: playlist.creator,
-      genre: playlist.genre,
+      genre: playlist.genre
     });
     setSongsInput((playlist.songs || []).join(', '));
     setIsEditing(true);
@@ -44,10 +49,10 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
-    // Parseo, limpieza y deduplicación de canciones en un solo paso
+
+    // Parseo, limpieza y deduplicación de canciones
     const songs = Array.from(
       new Set(
         songsInput
@@ -56,8 +61,8 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
           .filter(Boolean)
       )
     );
-    
-    onUpdate(playlist._id, { ...formData, songs });
+
+    await onUpdate(playlist._id, { ...formData, songs });
     setIsEditing(false);
   };
 
@@ -89,13 +94,15 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
               className="input"
             />
           </label>
-          
-          {/* CustomSelect no lleva label htmlFor nativo, asumimos que maneja su accesibilidad internamente */}
-          <CustomSelect
-            options={genreOptions}
-            value={formData.genre}
-            onChange={(val) => setFormData((prev) => ({ ...prev, genre: val }))}
-          />
+
+          <div className="form-group">
+            <label>Genre:</label>
+            <CustomSelect
+              options={genreOptions}
+              value={formData.genre}
+              onChange={(val) => setFormData((prev) => ({ ...prev, genre: val }))}
+            />
+          </div>
 
           <label htmlFor={`edit-songs-${playlist._id}`}>
             Songs (separadas por coma):
@@ -110,8 +117,12 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
             />
           </label>
           <div className="card-actions">
-            <button type="submit" className="save-btn">Save</button>
-            <button type="button" onClick={() => setIsEditing(false)} className="cancel-btn">Cancel</button>
+            <button type="submit" className="save-btn">
+              Save
+            </button>
+            <button type="button" onClick={() => setIsEditing(false)} className="cancel-btn">
+              Cancel
+            </button>
           </div>
         </form>
       </div>
@@ -121,15 +132,18 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
   return (
     <div className="playlist-card">
       <h2>{playlist.name}</h2>
-      <p><strong>Creator:</strong> {playlist.creator}</p>
-      <p><strong>Genre:</strong> {playlist.genre}</p>
-      
+      <p>
+        <strong>Creator:</strong> {playlist.creator}
+      </p>
+      <p>
+        <strong>Genre:</strong> {playlist.genre}
+      </p>
+
       {playlist.songs && playlist.songs.length > 0 && (
         <div className="songs-list">
           <strong>Songs:</strong>
           <ul>
             {playlist.songs.map((song, i) => (
-              // Usamos song + i por si hay nombres repetidos, aunque ya deduplicamos al guardar
               <li key={`${song}-${i}`}>
                 <button
                   type="button"
@@ -145,11 +159,23 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
           </ul>
         </div>
       )}
-      
+
       {isLoggedIn && (
         <div className="card-actions">
-          <button onClick={startEditing} className="edit-btn">Edit</button>
-          <button onClick={() => onDelete(playlist._id)} className="delete-btn">Delete</button>
+          <button
+            onClick={startEditing}
+            className="edit-btn"
+            aria-label={`Editar ${playlist.name}`}
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => onDelete(playlist._id)}
+            className="delete-btn"
+            aria-label={`Eliminar ${playlist.name}`}
+          >
+            Delete
+          </button>
         </div>
       )}
     </div>
