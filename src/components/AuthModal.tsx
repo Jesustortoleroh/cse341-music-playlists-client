@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface Props {
   isOpen: boolean;
@@ -34,24 +34,32 @@ export const AuthModal = ({
 
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Manejo de accesibilidad: Cerrar con Escape y atrapar el foco
+  const closeModal = useCallback(() => {
+    setErrorMessage(null);
+    setIsLoginView(true);
+    setRegName('');
+    setRegEmail('');
+    setRegPassword('');
+    setPasswordChecks({ length: false, uppercase: false, lowercase: false, number: false });
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
+      if (e.key === 'Escape') {
+        closeModal();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      // Mover el foco al modal cuando se abre
-      modalRef.current?.focus();
-    }
+    document.addEventListener('keydown', handleKeyDown);
+    modalRef.current?.focus();
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, closeModal]);
 
   const handlePasswordChange = (value: string) => {
     setRegPassword(value);
@@ -93,7 +101,7 @@ export const AuthModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={closeModal}>
       <div
         className="modal-content"
         ref={modalRef}
@@ -232,7 +240,7 @@ export const AuthModal = ({
           </form>
         )}
 
-        <button onClick={onClose} className="close-btn" disabled={isAuthLoading || isSubmitting}>
+        <button onClick={closeModal} className="close-btn" disabled={isAuthLoading || isSubmitting}>
           Cancel
         </button>
       </div>

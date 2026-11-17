@@ -8,6 +8,7 @@ interface Props {
   onDelete: (id: string) => void;
   onUpdate: (id: string, updatedData: Partial<Playlist>) => void;
   onPlay: (song: string) => void;
+  isFeatured?: boolean;
 }
 
 const genreOptions = [
@@ -23,7 +24,7 @@ const genreOptions = [
   { value: 'other', label: 'Other' }
 ];
 
-export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay }: Props) => {
+export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay, isFeatured = false }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [songsInput, setSongsInput] = useState('');
   const [formData, setFormData] = useState({
@@ -52,7 +53,10 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Parseo, limpieza y deduplicación de canciones
+    const nextName = formData.name.trim();
+    const nextCreator = formData.creator.trim();
+    if (!nextName || !nextCreator) return;
+
     const songs = Array.from(
       new Set(
         songsInput
@@ -62,7 +66,7 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
       )
     );
 
-    await onUpdate(playlist._id, { ...formData, songs });
+    await onUpdate(playlist._id, { ...formData, name: nextName, creator: nextCreator, songs });
     setIsEditing(false);
   };
 
@@ -117,7 +121,11 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
             />
           </label>
           <div className="card-actions">
-            <button type="submit" className="save-btn">
+            <button
+              type="submit"
+              className="save-btn"
+              disabled={!formData.name.trim() || !formData.creator.trim()}
+            >
               Save
             </button>
             <button type="button" onClick={() => setIsEditing(false)} className="cancel-btn">
@@ -131,7 +139,13 @@ export const PlaylistCard = ({ playlist, isLoggedIn, onDelete, onUpdate, onPlay 
 
   return (
     <div className="playlist-card">
-      <h2>{playlist.name}</h2>
+      <div className="playlist-card-header">
+        <h2>{playlist.name}</h2>
+        <div className="playlist-header-actions">
+          {isFeatured && <span className="featured-pill">Featured</span>}
+          <span className="playlist-badge">{playlist.genre}</span>
+        </div>
+      </div>
       <p>
         <strong>Creator:</strong> {playlist.creator}
       </p>

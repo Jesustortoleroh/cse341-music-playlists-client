@@ -43,11 +43,14 @@ export const PlaylistForm = ({ onSubmit }: Props) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim() || !creator.trim()) return;
+
     setIsSubmitting(true);
     try {
-      await onSubmit({ name, creator, genre, songs: songsArray });
+      await onSubmit({ name: name.trim(), creator: creator.trim(), genre, songs: songsArray });
       setName('');
       setCreator('');
+      setGenre('jazz');
       setSongsArray([]);
       setSongInput('');
     } catch (error) {
@@ -126,7 +129,11 @@ export const PlaylistForm = ({ onSubmit }: Props) => {
         </div>
       </div>
 
-      <button type="submit" className="submit-btn" disabled={isSubmitting}>
+      <button
+        type="submit"
+        className="submit-btn"
+        disabled={isSubmitting || !name.trim() || !creator.trim()}
+      >
         {isSubmitting ? 'Creating...' : 'Create Playlist'}
       </button>
     </form>

@@ -8,8 +8,23 @@ import { AuthModal } from './components/AuthModal';
 import { AudioPlayer } from './components/AudioPlayer';
 import { api } from './services/api';
 
+const genreOptions = [
+  'all',
+  'rock',
+  'pop',
+  'jazz',
+  'classical',
+  'electronic',
+  'hip-hop',
+  'reggae',
+  'blues',
+  'folk',
+  'other'
+];
+
 function App() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [selectedGenre, setSelectedGenre] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -43,36 +58,9 @@ function App() {
   }, [addNotification]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchInitialData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const [playlistsRes, auth] = await Promise.all([api.getPlaylists(), api.checkAuth()]);
-
-        if (!isMounted) return;
-
-        if (playlistsRes.data) setPlaylists(playlistsRes.data);
-        setIsLoggedIn(auth);
-      } catch (err: unknown) {
-        if (!isMounted) return;
-
-        const message = err instanceof Error ? err.message : 'Failed to load data';
-        setError(message);
-        addNotification(message, 'error');
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    void fetchInitialData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [addNotification]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadData();
+  }, [loadData]);
 
   const handleCreatePlaylist = async (data: {
     name: string;
@@ -115,6 +103,7 @@ function App() {
 
   const handleLogin = (provider: 'github' | 'google') => {
     setIsAuthLoading(true);
+    setIsModalOpen(false);
     const API_URL = import.meta.env.VITE_API_URL || 'https://vibe-beat-server.onrender.com';
     window.location.href = `${API_URL}/auth/${provider}`;
   };
@@ -138,6 +127,7 @@ function App() {
         method: 'POST'
       });
       if (res.ok) {
+        setCurrentSong(null);
         setIsLoggedIn(false);
         setIsModalOpen(false);
         addNotification('Logged out successfully', 'success');
@@ -148,6 +138,18 @@ function App() {
       setIsAuthLoading(false);
     }
   };
+
+  const totalSongs = playlists.reduce((sum, playlist) => sum + (playlist.songs?.length ?? 0), 0);
+  const topGenre = playlists.reduce<Record<string, number>>((acc, playlist) => {
+    const key = playlist.genre || 'other';
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
+  const favoriteGenre = Object.entries(topGenre).sort((a, b) => b[1] - a[1])[0];
+  const filteredPlaylists =
+    selectedGenre === 'all'
+      ? playlists
+      : playlists.filter((playlist) => playlist.genre === selectedGenre);
 
   if (loading) {
     return (
@@ -189,7 +191,10 @@ function App() {
       <Notifications notifications={notifications} />
 
       <header className="header">
-        <h1>🎵 VibeBeat</h1>
+        <div>
+          <p className="eyebrow">Live music curation</p>
+          <h1>🎵 VibeBeat</h1>
+        </div>
         <div className="auth-section">
           {isLoggedIn ? (
             <button onClick={handleLogout} className="auth-button logout" disabled={isAuthLoading}>
@@ -203,6 +208,25 @@ function App() {
         </div>
       </header>
 
+      <section className="dashboard-panel">
+        <div className="stat-card">
+          <span className="stat-label">Playlists</span>
+          <strong>{playlists.length}</strong>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Tracks</span>
+          <strong>{totalSongs}</strong>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Top genre</span>
+          <strong>{favoriteGenre ? favoriteGenre[0] : '—'}</strong>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Status</span>
+          <strong>{isLoggedIn ? 'Online' : 'Guest'}</strong>
+        </div>
+      </section>
+
       <AuthModal
         isOpen={isModalOpen}
         isAuthLoading={isAuthLoading}
@@ -214,20 +238,45 @@ function App() {
 
       <PlaylistForm onSubmit={handleCreatePlaylist} />
 
-      <div className="playlist-grid">
-        {playlists.map((playlist) => (
-          <PlaylistCard
-            key={playlist._id}
-            playlist={playlist}
-            isLoggedIn={isLoggedIn}
-            onDelete={handleDeletePlaylist}
-            onUpdate={handleUpdatePlaylist}
-            onPlay={(song) => setCurrentSong(song)}
-          />
+      <div className="filter-bar">
+        {genreOptions.map((genre) => (
+          <button
+            key={genre}
+            type="button"
+            className={`filter-chip ${selectedGenre === genre ? 'active' : ''}`}
+            onClick={() => setSelectedGenre(genre)}
+          >
+            {genre === 'all' ? 'All' : genre}
+          </button>
         ))}
       </div>
 
-      <AudioPlayer song={currentSong} onClose={() => setCurrentSong(null)} />
+      {filteredPlaylists.length === 0 ? (
+        <div className="empty-state">
+          <h3>No playlists match this vibe</h3>
+          <p>
+            {selectedGenre === 'all'
+              ? 'Create your first playlist to start building the perfect vibe.'
+              : `No playlists found for ${selectedGenre}. Try another genre.`}
+          </p>
+        </div>
+      ) : (
+        <div className="playlist-grid">
+          {filteredPlaylists.map((playlist, index) => (
+            <PlaylistCard
+              key={playlist._id}
+              playlist={playlist}
+              isLoggedIn={isLoggedIn}
+              onDelete={handleDeletePlaylist}
+              onUpdate={handleUpdatePlaylist}
+              onPlay={(song) => setCurrentSong(song)}
+              isFeatured={index === 0}
+            />
+          ))}
+        </div>
+      )}
+
+      <AudioPlayer key={currentSong ?? 'player-closed'} song={currentSong} onClose={() => setCurrentSong(null)} />
     </div>
   );
 }

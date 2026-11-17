@@ -10,40 +10,37 @@ export const AudioPlayer = ({ song, onClose }: Props) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    if (!song) {
+    if (!song || !isPlaying) {
       return;
     }
 
-    // ✅ Usamos una variable local para el intervalo
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
+          setIsPlaying(false);
           clearInterval(interval);
-          // En lugar de setIsPlaying(false) aquí (lo cual puede ser síncrono),
-          // lo hacemos asíncronamente o al final del intervalo.
           return 100;
         }
+
         return prev + 1;
       });
     }, 500);
 
-    return () => {
-      clearInterval(interval);
-      // Al desmontar o cambiar de canción, reseteamos el progreso
-      setProgress(0);
-    };
-  }, [song]);
+    return () => clearInterval(interval);
+  }, [song, isPlaying]);
 
-  // ✅ Controlamos si está reproduciendo basándonos en el progreso
   const isCurrentlyPlaying = isPlaying && progress < 100;
 
   const togglePlay = () => {
+    if (!song) return;
+
     if (progress >= 100) {
       setProgress(0);
       setIsPlaying(true);
-    } else {
-      setIsPlaying(!isPlaying);
+      return;
     }
+
+    setIsPlaying((prev) => !prev);
   };
 
   if (!song) return null;
